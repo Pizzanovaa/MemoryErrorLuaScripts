@@ -223,7 +223,7 @@ local function setupGUI()
     IG3.box_start = FFPOINT.new(40, 15, 0)
     IG3.box_name = "TITLE"
     IG3.colour = ImColor.new(0, 255, 0);
-    IG3.string_value = "- Jail Opener v1.0 -"
+    IG3.string_value = "- Jail Opener v1.1 -"
 
     IG6 = API.CreateIG_answer()
     IG6.box_start = FFPOINT.new(5, 80, 0)
