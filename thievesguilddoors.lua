@@ -429,4 +429,3 @@ while API.Read_LoopyLoop() do
     end
 end
 
-print("Script Finished")
