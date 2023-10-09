@@ -1,24 +1,5 @@
-
---[[
-#Script Name:   <ThievesGuildDoors.lua>
-# Description:  <Picklocks  Thieves' Guild doors.>
-# Autor:        <Pizzanova>
-# Version:      <1.1>
-# Datum:        <07.10.2023>
---]]
-
 local API = require("api")
 local UTILS = require("utils")
-
------------------------------------------SETTINGS-------------------------------------------------------------
-
-local JagexAccount = true -- Autologin function wont be used if true.
-local accountusername = "thievesdoors@outlook.co.uk" -- replace with your actual username/email
-local passwordstring = "getpickpocketed" -- Replace with your actual password
-
------------------------------------------SETTINGS-------------------------------------------------------------
-
-
 
 MAX_IDLE_TIME_MINUTES = 4
 afk = os.time()
@@ -29,6 +10,9 @@ local CURSOR_LOCATION_VARBIT_ID = 174
 local BACKSPACE_KEY = 8
 local USERNAME = false
 local PASSWORD = false
+local JagexAccount = true -- Autologin function won't be used if true.
+local accountusername = "thievesdoors@outlook.co.uk" -- replace with your actual username/email
+local passwordstring = "getpickpocketed" -- Replace with your actual password
 local door13 = 52302
 local door46 = 52304
 local ThievingLevel = API.XPLevelTable(API.GetSkillXP("THIEVING"))
@@ -40,16 +24,15 @@ local lastXpDropTime = os.time()
 local currentworld = 62
 local P2PWorlds = {
     1, 5, 6, 9, 10, 12, 14, 15, 16, 21, 22, 23, 24, 25, 26, 27, 28, 31, 32, 35, 36, 37, 39, 40, 44, 45,
-    46, 49, 50, 51, 53, 54, 58, 59, 60, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 76, 77, 78, 79, 
-	82, 83, 85, 88, 89, 91, 92, 97, 98, 99, 100, 103, 104, 105, 106, 116, 117, 119, 123, 124, 134, 138,
-	140, 139, 252, 257, 258, 259
+    46, 49, 50, 51, 53, 54, 58, 59, 60, 62, 63, 64, 65, 67, 68, 69, 70, 71, 72, 73, 74, 76, 77, 78, 79,
+    82, 83, 85, 88, 89, 91, 92, 97, 98, 99, 100, 103, 104, 105, 106, 116, 117, 119, 123, 124, 134, 138,
+    140, 139, 252, 257, 258, 259
 }
 
 ----------------------------------------LOGIN SHIT-------------------------------------
 
-
 local specialChars = {
-  ["!"] = true, ["@"] = true, ["#"] = true, ["$"] = true, ["%"] = true, ["^"] = true,
+    ["!"] = true, ["@"] = true, ["#"] = true, ["$"] = true, ["%"] = true, ["^"] = true,
     ["&"] = true, ["*"] = true, ["("] = true, [")"] = true, ["_"] = true, ["-"] = true,
     ["+"] = true, ["="] = true, ["{"] = true, ["}"] = true, ["["] = true, ["]"] = true,
     ["|"] = true, ["\\"] = true, [":"] = true, [";"] = true, ['"'] = true, ["'"] = true,
@@ -59,69 +42,60 @@ local specialChars = {
 local function getCursorState()
     cursor_box = tostring(API.VB_GetBits(CURSOR_LOCATION_VARBIT_ID))
     if cursor_box == USERNAME_BOX_VARBIT_STR then
-        print ("USERNAME_BOX")
-		USERNAME = true
-		PASSWORD = false
+        print("USERNAME_BOX")
+        USERNAME = true
+        PASSWORD = false
     end
     if cursor_box == PASSWORD_BOX_VARBIT_STR then
         print("PASSWORD_BOX")
-		USERNAME = false
-		PASSWORD = true
+        USERNAME = false
+        PASSWORD = true
     end
-
 end
 
 local function TypeStringOnKeyboard(inputString)
-   for i = 1, #inputString do
+    for i = 1, #inputString do
         local char = inputString:sub(i, i)
-		
         API.KeyPress_(char)
-		
-		 if specialChars[char] or char:match("%u") then
-        API.RandomSleep2(200, 0, 0)	
 
+        if specialChars[char] or char:match("%u") then
+            API.RandomSleep2(200, 0, 0)
         end
     end
 end
-	
-
 
 local function getUsernameInterfaceText()
     return API.ScanForInterfaceTest2Get(false,
-                  {{744, 0, -1, -1, 0}, {744, 26, -1, 0, 0}, {744, 39, -1, 26, 0}, {744, 52, -1, 39, 0},
-                {744, 93, -1, 52, 0}, {744, 94, -1, 93, 0}, {744, 96, -1, 94, 0}, {744, 110, -1, 96, 0},
-                {744, 111, -1, 110, 0}})[1].textids
+        {{744, 0, -1, -1, 0}, {744, 26, -1, 0, 0}, {744, 39, -1, 26, 0}, {744, 52, -1, 39, 0},
+            {744, 93, -1, 52, 0}, {744, 94, -1, 93, 0}, {744, 96, -1, 94, 0}, {744, 110, -1, 96, 0},
+            {744, 111, -1, 110, 0}})[1].textids
 end
 
 local function isInvalidDetailsInterfaceVisible()
     local text = API.ScanForInterfaceTest2Get(false,
         {{744, 0, -1, -1, 0}, {744, 197, -1, 0, 0}, {744, 338, -1, 197, 0}, {744, 340, -1, 338, 0},
-         {744, 342, -1, 340, 0}, {744, 345, -1, 342, 0}})[1].textids
-    
+            {744, 342, -1, 340, 0}, {744, 345, -1, 342, 0}})[1].textids
 
     return text and text:find("Invalid email or password.")
 end
 
 local function clearPass()
+    if (API.GetGameState() == 1) then
+        if USERNAME then
+            API.KeyPress_("\t")
+            API.RandomSleep2(600, 200, 200)
+        end
 
- if (API.GetGameState() == 1) then
- 
-     if USERNAME then
-	  API.KeyPress_("\t")
-      API.RandomSleep2(600, 200, 200)
-	  end
-	  
-	  if PASSWORD then
-	  for i = 1, 40 do
- 	     API.KeyboardPress2(BACKSPACE_KEY, .6, .2)
-      end
-	     API.RandomSleep2(600, 200, 200)
-      end
- end
- end
+        if PASSWORD then
+            for i = 1, 40 do
+                API.KeyboardPress2(BACKSPACE_KEY, .6, .2)
+            end
+            API.RandomSleep2(600, 200, 200)
+        end
+    end
+end
 
 --------------------------LOGIN SHIT------------------------------------------------------
-
 
 -- Table to keep track of generated worlds and their generation times
 local generatedWorlds = {}
@@ -223,7 +197,7 @@ local function setupGUI()
     IG3.box_start = FFPOINT.new(40, 15, 0)
     IG3.box_name = "TITLE"
     IG3.colour = ImColor.new(0, 255, 0);
-    IG3.string_value = "- Jail Opener v1.1 -"
+    IG3.string_value = "- Jail Opener v1.0 -"
 
     IG6 = API.CreateIG_answer()
     IG6.box_start = FFPOINT.new(5, 80, 0)
@@ -236,7 +210,6 @@ local function setupGUI()
     IG7.box_name = "LINE2"
     IG7.colour = ImColor.new(0, 255, 0);
     IG7.string_value = "-----------------------------------"
-
 
     IG4 = API.CreateIG_answer()
     IG4.box_start = FFPOINT.new(70, 31, 0)
@@ -261,11 +234,9 @@ function drawGUI()
     API.DrawTextAt(IG5)
     API.DrawTextAt(IG6)
     API.DrawTextAt(IG7)
-
 end
 
 setupGUI()
-
 
 local function idleCheck()
     local timeDiff = os.difftime(os.time(), afk)
@@ -278,7 +249,7 @@ local function idleCheck()
 end
 
 local function RandomSleep3(arg1, arg2, arg3)
-    local numSteps = 8 -- Number of steps to divide the sleep into (To not stop GUI from updating mid sleep)
+    local numSteps = 8 -- Number of steps to divide the sleep into (To not stop GUI from updating mid-sleep)
 
     for i = 1, numSteps do
         local stepDuration1 = arg1 / numSteps
@@ -289,7 +260,6 @@ local function RandomSleep3(arg1, arg2, arg3)
         printProgressReport()
     end
 end
-
 
 function CheckDoorStatus(doorTile)
     if not API.CheckTileforObjects1(doorTile) then
@@ -309,21 +279,13 @@ local doors = {
     { tile = WPOINT.new(4776, 5916, 0), status = false },
     { tile = WPOINT.new(4778, 5916, 0), status = false },
     { tile = WPOINT.new(4780, 5916, 0), status = false },
-    { tile = WPOINT.new(4776, 5915, 0), status = false },
-    { tile = WPOINT.new(4778, 5915, 0), status = false },
-    { tile = WPOINT.new(4780, 5915, 0), status = false }
 }
 
 local doorstruetile = {
-    { tile = WPOINT.new(4776, 5917, 0)},
-    { tile = WPOINT.new(4778, 5917, 0)},
-    { tile = WPOINT.new(4780, 5917, 0)},
-    { tile = WPOINT.new(4776, 5914, 0)},
-    { tile = WPOINT.new(4778, 5914, 0)},
-    { tile = WPOINT.new(4780, 5914, 0)}
+    { tile = WPOINT.new(4776, 5917, 0) },
+    { tile = WPOINT.new(4778, 5917, 0) },
+    { tile = WPOINT.new(4780, 5917, 0) },
 }
-
-
 
 function checkalldoors()
     for i, door in ipairs(doors) do
@@ -337,7 +299,6 @@ local function calculateDistance(x1, y1, x2, y2)
     return math.sqrt(dx * dx + dy * dy)
 end
 
-
 function worldhop()
     local newWorld = getNewWorld()
     API.DoAction_Interface(0xffffffff, 0xffffffff, 3, 1465, 9, -1, 5392); -- world hop screen
@@ -349,14 +310,26 @@ end
 -- main loop
 API.Write_LoopyLoop(1)
 API.Write_Doaction_paint(1)
+local hasAddedElements = false
 
 while API.Read_LoopyLoop() do
     drawGUI()
     ThievingLevel = API.XPLevelTable(API.GetSkillXP("THIEVING"))
 
-   if (API.GetGameState() == 1 and  not JagexAccount) then
+    if ThievingLevel >= 35 and not hasAddedElements then
+        table.insert(doors, { tile = WPOINT.new(4776, 5915, 0), status = false })
+        table.insert(doors, { tile = WPOINT.new(4778, 5915, 0), status = false })
+        table.insert(doors, { tile = WPOINT.new(4780, 5915, 0), status = false })
 
-     
+        table.insert(doorstruetile, { tile = WPOINT.new(4776, 5914, 0) })
+        table.insert(doorstruetile, { tile = WPOINT.new(4778, 5914, 0) })
+        table.insert(doorstruetile, { tile = WPOINT.new(4780, 5914, 0) })
+
+        hasAddedElements = true  -- Set the flag to true to prevent further additions
+    end
+
+    if (API.GetGameState() == 1 and not JagexAccount) then
+
         getCursorState()
 
         local usernametext = getUsernameInterfaceText()
@@ -400,61 +373,60 @@ while API.Read_LoopyLoop() do
             end
         end
     end
-	
-  if (API.GetGameState() == 1 and JagexAccount) then
-      API.Write_LoopyLoop(false)
-  end
-	 if (API.GetGameState() == 2) then
-    API.KeyPress_(" ")
-    API.RandomSleep2(200, 200, 200)
+
+    if (API.GetGameState() == 1 and JagexAccount) then
+        API.Write_LoopyLoop(false)
     end
-	
-	
-	
+
+    if (API.GetGameState() == 2) then
+        API.KeyPress_(" ")
+        API.RandomSleep2(200, 200, 200)
+    end
+
     if findNpc(11294) then
         if ThievingLevel >= 15 then
-        printProgressReport()
-        idleCheck()
-		
-		    if ThievingLevel < 35 and doors[1].status and doors[2].status and doors[3].status then
+            printProgressReport()
+            idleCheck()
+
+            if ThievingLevel < 35 and doors[1].status and doors[2].status and doors[3].status then
                 worldhop()
             end
 
-            if ThievingLevel >= 35 and doors[1].status and doors[2].status and doors[3].status and doors[4].status and doors[5].status and doors[6].status then
-                worldhop()
+            if ThievingLevel >= 35 then
+                if doors[1].status and doors[2].status and doors[3].status and doors[4].status and doors[5].status and doors[6].status then
+                    worldhop()
+                end
             end
 
+            -- Get the player's coordinates
+            local player = API.PlayerCoord()
 
-        -- Get the player's coordinates
-        local player = API.PlayerCoord()
+            -- Find the closest door to the player
+            local closestDoor = nil
+            local closestDistance = math.huge 
+            local doorId = nil
+            local closestDoorIndex = nil
 
-        -- Find the closest door to the player
-        local closestDoor = nil
-        local closestDistance = math.huge 
-        local doorId = nil
-        local closestDoorIndex = nil
-
-        for i, door in ipairs(doors) do
-            
-            checkalldoors()
-            
-            local distance = calculateDistance(player.x, player.y, doorstruetile[i].tile.x, doorstruetile[i].tile.y)
-            if not door.status and distance < closestDistance then
-                closestDistance = distance
-                closestDoor = door
-                doorId = (i <= 3) and door13 or door46 -- Determine the door ID based on position
-                closestDoorIndex = i -- Store the closest door's index
+            for i, door in ipairs(doors) do
+                checkalldoors()
+                local distance = calculateDistance(player.x, player.y, doorstruetile[i].tile.x, doorstruetile[i].tile.y)
+                if not door.status and distance < closestDistance then
+                    closestDistance = distance
+                    closestDoor = door
+                    doorId = (i <= 3) and door13 or door46 -- Determine the door ID based on position
+                    closestDoorIndex = i -- Store the closest door's index
+                end
             end
-        end
 
-        
-        if closestDoor then
-             print("Door " .. closestDoorIndex .. " is closed, Trying to open...")
-            API.DoAction_Object2(0x31, 0, { doorId }, 50, doorstruetile[closestDoorIndex].tile)
-			RandomSleep3(600, 200, 200)
-            API.WaitUntilMovingEnds()
-            RandomSleep3(1100, 200, 200)
+            if closestDoor then
+                print("Door " .. closestDoorIndex .. " is closed, Trying to open...")
+                API.DoAction_Object2(0x31, 0, { doorId }, 50, doorstruetile[closestDoorIndex].tile)
+                RandomSleep3(600, 200, 200)
+                API.WaitUntilMovingEnds()
+                RandomSleep3(1100, 200, 200)
+            end
         end
     end
 end
-end
+
+print("Script Finished")
